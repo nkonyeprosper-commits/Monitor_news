@@ -20,29 +20,55 @@ export class TweetService {
 
   async processPendingTweets(): Promise<void> {
     try {
-      logger.info("Processing pending tweets...");
+      logger.info("🐦 ========================================");
+      logger.info("🐦 STARTING TWITTER POSTING CYCLE");
+      logger.info("🐦 ========================================");
 
       // Process new coin launches
       await this.processNewCoinTweets();
 
       // Process news tweets
       await this.processNewsTweets();
+
+      logger.info("🐦 ========================================");
+      logger.info("🐦 TWITTER POSTING CYCLE COMPLETED");
+      logger.info("🐦 ========================================");
     } catch (error) {
+      logger.error("🐦 ❌ CRITICAL ERROR in processPendingTweets:", error);
       throw error;
     }
   }
 
   private async processNewCoinTweets(): Promise<void> {
+    logger.info("🐦 📊 Checking for unposted coins...");
+
     const unpostedCoins = await Coin.find({ isPosted: false })
       .sort({ launchTime: -1 })
       .limit(2); // Reduced from 5 to 2 for better pacing
 
+    logger.info(`🐦 📊 Found ${unpostedCoins.length} unposted coins`);
+
+    if (unpostedCoins.length === 0) {
+      logger.info("🐦 📊 No unposted coins to tweet about");
+      return;
+    }
+
     for (const coin of unpostedCoins) {
       try {
+        logger.info(`🐦 💎 Processing coin: ${coin.symbol} (${coin.name})`);
+        logger.info(`🐦 💎 Contract: ${coin.contractAddress}`);
+        logger.info(`🐦 💎 Network: ${coin.network}`);
+
         const tweetContent = this.generateCoinLaunchTweet(coin);
+        logger.info(`🐦 💎 Tweet content generated (${tweetContent.length} chars)`);
+        logger.info(`🐦 💎 Tweet preview: ${tweetContent.substring(0, 100)}...`);
+
+        logger.info(`🐦 💎 Attempting to post tweet...`);
         const tweetId = await this.twitter.tweet(tweetContent);
 
         if (tweetId) {
+          logger.info(`🐦 ✅ Tweet posted successfully! Tweet ID: ${tweetId}`);
+
           // Save tweet record
           const tweet = new Tweet({
             content: tweetContent,
@@ -53,30 +79,51 @@ export class TweetService {
             postedAt: new Date(),
           });
           await tweet.save();
+          logger.info(`🐦 ✅ Tweet record saved to database`);
 
           // Mark coin as posted
           coin.isPosted = true;
           await coin.save();
-
-          logger.info(`Tweet posted for coin: ${coin.symbol}`);
+          logger.info(`🐦 ✅ Coin marked as posted: ${coin.symbol}`);
+        } else {
+          logger.warn(`🐦 ⚠️ Tweet posting returned null (failed) for coin: ${coin.symbol}`);
         }
       } catch (error) {
-        logger.error(`Error posting tweet for coin ${coin.symbol}:`, error);
+        logger.error(`🐦 ❌ Error posting tweet for coin ${coin.symbol}:`, error);
       }
     }
   }
 
   private async processNewsTweets(): Promise<void> {
+    logger.info("🐦 📰 Checking for unposted news...");
+
     const unpostedNews = await News.find({ isPosted: false })
       .sort({ publishedAt: -1 })
       .limit(1);
 
+    logger.info(`🐦 📰 Found ${unpostedNews.length} unposted news items`);
+
+    if (unpostedNews.length === 0) {
+      logger.info("🐦 📰 No unposted news to tweet about");
+      return;
+    }
+
     for (const news of unpostedNews) {
       try {
+        logger.info(`🐦 📰 Processing news: ${news.title}`);
+        logger.info(`🐦 📰 Source: ${news.source}`);
+        logger.info(`🐦 📰 Network: ${news.network}`);
+
         const tweetContent = this.generateNewsTweet(news);
+        logger.info(`🐦 📰 Tweet content generated (${tweetContent.length} chars)`);
+        logger.info(`🐦 📰 Tweet preview: ${tweetContent.substring(0, 100)}...`);
+
+        logger.info(`🐦 📰 Attempting to post tweet...`);
         const tweetId = await this.twitter.tweet(tweetContent);
 
         if (tweetId) {
+          logger.info(`🐦 ✅ News tweet posted successfully! Tweet ID: ${tweetId}`);
+
           // Save tweet record
           const tweet = new Tweet({
             content: tweetContent,
@@ -87,15 +134,17 @@ export class TweetService {
             postedAt: new Date(),
           });
           await tweet.save();
+          logger.info(`🐦 ✅ Tweet record saved to database`);
 
           // Mark news as posted
           news.isPosted = true;
           await news.save();
-
-          logger.info(`News tweet posted: ${news.title}`);
+          logger.info(`🐦 ✅ News marked as posted: ${news.title.substring(0, 50)}...`);
+        } else {
+          logger.warn(`🐦 ⚠️ News tweet posting returned null (failed): ${news.title}`);
         }
       } catch (error) {
-        logger.error(`Error posting news tweet:`, error);
+        logger.error(`🐦 ❌ Error posting news tweet:`, error);
       }
     }
   }
