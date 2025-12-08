@@ -35,7 +35,7 @@ export class TweetService {
   private async processNewCoinTweets(): Promise<void> {
     const unpostedCoins = await Coin.find({ isPosted: false })
       .sort({ launchTime: -1 })
-      .limit(5);
+      .limit(2); // Reduced from 5 to 2 for better pacing
 
     for (const coin of unpostedCoins) {
       try {

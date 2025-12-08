@@ -34,7 +34,7 @@ export class TelegramService {
   private async processNewCoinMessages(): Promise<void> {
     const unpostedCoins = await Coin.find({ isTelegramPosted: false })
       .sort({ launchTime: -1 })
-      .limit(5);
+      .limit(2); // Reduced from 5 to 2 for better pacing
 
     for (const coin of unpostedCoins) {
       try {

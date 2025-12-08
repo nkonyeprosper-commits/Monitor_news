@@ -18,8 +18,8 @@ export class Scheduler {
   start(): void {
     logger.info("Starting scheduler...");
 
-    // Monitor new coin launches every 5 minutes
-    cron.schedule("*/5 * * * *", async () => {
+    // Monitor new coin launches every 15 minutes (collects data only)
+    cron.schedule("*/15 * * * *", async () => {
       try {
         await this.monitoringService.monitorNewLaunches();
       } catch (error) {
@@ -27,8 +27,8 @@ export class Scheduler {
       }
     });
 
-    // Monitor news every 15 minutes
-    cron.schedule("*/15 * * * *", async () => {
+    // Monitor news every 30 minutes (collects data only)
+    cron.schedule("*/30 * * * *", async () => {
       try {
         await this.monitoringService.monitorNews();
       } catch (error) {
@@ -36,8 +36,9 @@ export class Scheduler {
       }
     });
 
-    // Process and post tweets every 20 minutes
-    cron.schedule("*/20 * * * *", async () => {
+    // Process and post tweets every 1 hour (at minute 0)
+    // Max 3 posts per cycle (2 coins + 1 news)
+    cron.schedule("0 * * * *", async () => {
       try {
         await this.tweetService.processPendingTweets();
       } catch (error) {
@@ -45,8 +46,9 @@ export class Scheduler {
       }
     });
 
-    // Process and post Telegram messages every 20 minutes
-    cron.schedule("*/20 * * * *", async () => {
+    // Process and post Telegram messages every 1 hour (at minute 30, offset from Twitter)
+    // Max 3 posts per cycle (2 coins + 1 news)
+    cron.schedule("30 * * * *", async () => {
       try {
         await this.telegramService.processPendingMessages();
       } catch (error) {

@@ -16,14 +16,24 @@ export class TwitterClient {
 
   async tweet(content: string): Promise<string | null> {
     try {
-      //   this.client.readWrite.v2.tweet();
-      //   const tweet = await this.client.v2.tweet(content);
+      // Try v2 API first (requires Elevated access)
       const tweet = await this.client.readWrite.v2.tweet(content);
-      logger.info(`Tweet posted successfully: ${tweet.data.id}`);
+      logger.info(`✅ Tweet posted successfully (v2): ${tweet.data.id}`);
       return tweet.data.id;
-    } catch (error) {
-      logger.error("Error posting tweet:", error);
-      return null;
+    } catch (error: any) {
+      // Log detailed error
+      logger.error("❌ Error posting tweet with v2 API:", error);
+
+      // If v2 fails, try v1.1 API (works with Essential access)
+      try {
+        logger.info("🔄 Attempting to use v1.1 API fallback...");
+        const v1Tweet = await this.client.readWrite.v1.tweet(content);
+        logger.info(`✅ Tweet posted successfully (v1.1): ${v1Tweet.id_str}`);
+        return v1Tweet.id_str;
+      } catch (v1Error) {
+        logger.error("❌ Error posting tweet with v1.1 API fallback:", v1Error);
+        return null;
+      }
     }
   }
 
