@@ -1,0 +1,110 @@
+# Node.js modules
+node_modules/
+
+# Environment variables
+.env
+.env.* # For environment-specific files like .env.development
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# Dependency directories
+jspm_packages/
+bower_components/
+
+# Test coverage
+coverage/
+
+# Cache files
+*.cache
+.cache/
+.nyc_output/
+
+# TypeScript files
+*.tsbuildinfo
+
+# Generated files
+*.lock
+*.bak
+*.tmp
+
+# Optional npm and yarn directories
+.npm/
+.yarn/
+.pnp.*
+.pnp.js
+
+# Docker files
+docker-compose.override.yml
+.docker/
+*.pid
+
+# Git files
+.git/
+*.orig
+
+# Temporary files
+tmp/
+*.tmp
+*.temp
+
+# Miscellaneous
+*.iml
+*.idea/
+*.project
+*.classpath
+*.cproject
+*.mvn/
+# Ignore specific debug configurations
+*.launch
+
+# Generated documentation
+docs/
+
+# Ignore any custom configuration files
+config/*.local.js
+config/*.local.json
+
+# Claude AI files
+.claude/
+.claude*
+
+# Deployment documentation (keep only main docs in repo)
+CPANEL_*.md
+TROUBLESHOOTING_CPANEL.md
+CRON_JOBS_REFERENCE.md
+DEPLOYMENT_CHECKLIST.md
+README_DEPLOYMENT.md
+READY_TO_DEPLOY.md
+DEPLOY_NOW.md
+RAILWAY_DEPLOYMENT.md
+rate-limit-fix-summary.md
+memory-fix-summary.md
+.htaccess
+test-cpanel.js
+test-save-fix.js
+test-scanner.js
+
+
+# Deployment archives
+*.zip
+dist.zip
