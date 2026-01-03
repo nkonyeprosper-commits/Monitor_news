@@ -38,7 +38,7 @@ export interface NewsItem {
   url: string;
   publishedAt: Date;
   coinSymbol: string;
-  network: "sui" | "bnb";
+  network: "sui" | "bnb" | "general";
   source: string;
 
   // Additional metadata for DexTools news

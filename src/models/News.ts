@@ -7,7 +7,7 @@ export interface INews extends Document {
   url: string;
   publishedAt: Date;
   coinSymbol: string;
-  network: "sui" | "bnb";
+  network: "sui" | "bnb" | "general";
   source: string;
   isPosted: boolean;
   isTelegramPosted: boolean;
@@ -23,7 +23,7 @@ const NewsSchema: Schema = new Schema(
     url: { type: String, required: false },
     publishedAt: { type: Date, required: true },
     coinSymbol: { type: String, required: false },
-    network: { type: String, enum: ["sui", "bnb"], required: false },
+    network: { type: String, enum: ["sui", "bnb", "general"], required: false },
     source: { type: String, required: false },
     isPosted: { type: Boolean, default: false },
     isTelegramPosted: { type: Boolean, default: false },

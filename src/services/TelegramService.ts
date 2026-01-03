@@ -48,6 +48,7 @@ export class TelegramService {
             coinId: coin.id,
             type: "launch",
             messageId,
+            chatId: this.telegram.getChannelId(),
             isPosted: true,
             postedAt: new Date(),
           });
@@ -85,6 +86,7 @@ export class TelegramService {
             newsId: news.id,
             type: "news",
             messageId,
+            chatId: this.telegram.getChannelId(),
             isPosted: true,
             postedAt: new Date(),
           });
@@ -99,6 +101,79 @@ export class TelegramService {
       } catch (error) {
         logger.error(`Error posting Telegram news message:`, error);
       }
+    }
+  }
+
+  private async isNewsPostedToDestination(
+    newsId: string,
+    chatId: string
+  ): Promise<boolean> {
+    const existingMessage = await TelegramMessage.findOne({
+      newsId,
+      chatId,
+      isPosted: true,
+    });
+    return !!existingMessage;
+  }
+
+  async processGroupNews(): Promise<void> {
+    try {
+      const groupId = this.telegram.getGroupId();
+
+      if (!groupId) {
+        logger.warn("TELEGRAM_GROUP_ID not configured, skipping group news");
+        return;
+      }
+
+      // Get all news (mix of general, SUI, BNB)
+      const allNews = await News.find({
+        network: { $in: ["general", "sui", "bnb"] },
+      })
+        .sort({ publishedAt: -1 })
+        .limit(20); // Get more to filter from
+
+      // Filter to find first one not posted to this group
+      let newsToPost = null;
+      for (const news of allNews) {
+        const alreadyPosted = await this.isNewsPostedToDestination(
+          news.id,
+          groupId
+        );
+        if (!alreadyPosted) {
+          newsToPost = news;
+          break;
+        }
+      }
+
+      if (!newsToPost) {
+        logger.info("No unposted news available for group");
+        return;
+      }
+
+      // Generate and send message
+      const messageContent = this.generateNewsMessage(newsToPost);
+      const messageId = await this.telegram.sendMessage(messageContent, groupId);
+
+      if (messageId) {
+        // Save TelegramMessage record with group chatId
+        const message = new TelegramMessage({
+          content: messageContent,
+          newsId: newsToPost.id,
+          type: "news",
+          messageId,
+          chatId: groupId, // Track which destination
+          isPosted: true,
+          postedAt: new Date(),
+        });
+        await message.save();
+
+        logger.info(`Posted news to group: ${newsToPost.title}`);
+        // NOTE: Do NOT set newsToPost.isTelegramPosted = true
+        // This keeps channel and group posting independent
+      }
+    } catch (error) {
+      logger.error("Error processing group news:", error);
+      throw error;
     }
   }
 

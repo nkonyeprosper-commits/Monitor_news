@@ -4,11 +4,13 @@ import { logger } from "../utils/logger";
 export class TelegramClient {
   private bot: Telegraf | undefined;
   private channelId: string;
+  private groupId: string;
   private enabled: boolean;
 
   constructor() {
     const botToken = process.env.TELEGRAM_BOT_TOKEN!;
     this.channelId = process.env.TELEGRAM_CHANNEL_ID!;
+    this.groupId = process.env.TELEGRAM_GROUP_ID!;
     this.enabled = process.env.TELEGRAM_ENABLED === "true";
 
     if (!this.enabled) {
@@ -28,15 +30,17 @@ export class TelegramClient {
     logger.info("Telegram bot initialized successfully");
   }
 
-  async sendMessage(content: string): Promise<number | null> {
+  async sendMessage(content: string, chatId?: string): Promise<number | null> {
     if (!this.enabled || !this.bot) {
       logger.warn("Telegram is disabled or not initialized, skipping message send");
       return null;
     }
 
+    const targetChatId = chatId || this.channelId;
+
     try {
       const message = await this.bot.telegram.sendMessage(
-        this.channelId,
+        targetChatId,
         content,
         {
           parse_mode: "HTML",
@@ -73,5 +77,13 @@ export class TelegramClient {
 
   isEnabled(): boolean {
     return this.enabled;
+  }
+
+  getChannelId(): string {
+    return this.channelId;
+  }
+
+  getGroupId(): string {
+    return this.groupId;
   }
 }
