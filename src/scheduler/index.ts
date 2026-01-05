@@ -58,7 +58,7 @@ export class Scheduler {
 
     // Post news to Telegram group daily at 9:00 AM
     // 1 news item per day (mix of all crypto news)
-    cron.schedule("0 9 * * *", async () => {
+    cron.schedule("0 10 * * *", async () => {
       try {
         await this.telegramService.processGroupNews();
       } catch (error) {
